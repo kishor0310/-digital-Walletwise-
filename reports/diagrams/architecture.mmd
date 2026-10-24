@@ -1,0 +1,35 @@
+graph TD
+    subgraph Presentation_Tier ["Presentation Tier (React 18 + Vite)"]
+        UI["Tailwind CSS Responsive UI<br/>(Light Mode Primary / Dark Mode Toggle)"]
+        Voice["WiseVoice AI Voice Assistant<br/>(Web Speech STT / TTS)"]
+        Components["Components: Dashboard, WalletOverview,<br/>AddMoney, Transfer, PayBills, Admin"]
+        State["Auth, Theme & Voice Contexts"]
+        UI --- State
+        Voice --- State
+        Components --- State
+    end
+
+    subgraph Application_Tier ["Application Tier (Node.js & Express.js Engine)"]
+        Router["Express RESTful API Routing"]
+        AuthMiddleware["JWT Authentication & RBAC Guards"]
+        Controllers["Controllers: Auth, Wallet, Transfer,<br/>Bill, Transaction, Admin, Profile"]
+        WalletService["WalletService (ACID Transaction Logic & Deadlock Ordering)"]
+        RateLimit["Helmet Security & Rate Limiting"]
+        
+        Router --- RateLimit
+        Router --- AuthMiddleware
+        AuthMiddleware --- Controllers
+        Controllers --- WalletService
+    end
+
+    subgraph Persistence_Tier ["Persistence Tier (Relational DBMS - 3NF Schema)"]
+        DB["SQLite3 / MySQL Parameterized Queries"]
+        Tables[("Tables: users, wallets, transactions,<br/>transaction_entries, bill_payments, audit_logs")]
+        WAL["Write-Ahead Logging (WAL) & Disk Durability"]
+        
+        DB --- Tables
+        DB --- WAL
+    end
+
+    State -->|HTTP/REST & Bearer JWT| Router
+    WalletService -->|ACID DB Transactions & Rollback| DB

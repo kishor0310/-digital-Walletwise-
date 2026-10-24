@@ -1,0 +1,54 @@
+flowchart TD
+    User([User Client])
+    Admin([Administrator])
+    
+    subgraph Processes ["Sub-Processes (Level-1 DFD)"]
+        P1["1.0 Authentication & Session Management"]
+        P2["2.0 Wallet Provisioning & Balance Sync"]
+        P3["3.0 Deposit Processing (Add Money)"]
+        P4["4.0 Peer-to-Peer Transfer Engine"]
+        P5["5.0 Utility Bill Settlement"]
+        P6["6.0 Ledger Auditing & Reporting"]
+    end
+
+    subgraph Data_Stores ["Relational Data Stores"]
+        D1[("users table")]
+        D2[("wallets table")]
+        D3[("transactions table")]
+        D4[("transaction_entries ledger")]
+        D5[("bill_payments table")]
+        D6[("audit_logs table")]
+    end
+
+    User -->|Login / Register| P1
+    P1 <-->|Verify Password Hash & Role| D1
+    P1 -->|JWT Token| User
+
+    User -->|Inspect Balance| P2
+    P2 <-->|Fetch Balance & Limits| D2
+    P2 -->|Live Balance Card| User
+
+    User -->|Amount & Note| P3
+    P3 -->|Credit Update| D2
+    P3 -->|Insert ADD Record| D3
+    P3 -->|Insert CREDIT Entry| D4
+    P3 -->|Log Action| D6
+
+    User -->|Recipient & Amount| P4
+    P4 -->|Check Balance & Lock Order| D2
+    P4 -->|Debit Sender & Credit Recipient| D2
+    P4 -->|Insert TRANSFER Record| D3
+    P4 -->|Insert DEBIT & CREDIT Entries| D4
+    P4 -->|Log Transfer| D6
+
+    User -->|Bill Category & Ref| P5
+    P5 -->|Deduct Amount| D2
+    P5 -->|Insert BILL Record| D3
+    P5 -->|Insert Settlement Entry| D5
+    P5 -->|Log Bill Payment| D6
+
+    Admin -->|Review Platform Volume & Users| P6
+    P6 <-->|Aggregate Metrics & System Logs| D1
+    P6 <-->|Aggregate Transactions| D3
+    P6 <-->|Inspect Security Trail| D6
+    P6 -->|Admin Analytics & User Controls| Admin

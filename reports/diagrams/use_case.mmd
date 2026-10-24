@@ -1,0 +1,45 @@
+flowchart LR
+    User["Standard User (Mega Sree / Peer)"]
+    Admin["System Administrator (admin@walletwise.com)"]
+    Assistant["WiseVoice Assistant"]
+
+    subgraph WalletWise_System ["WalletWise Digital Wallet System"]
+        UC1((Register Account & Provision Wallet))
+        UC2((Authenticate via JWT & Bcrypt))
+        UC3((Inspect Balance & Wallet Details))
+        UC4((Simulate Add Demo Money))
+        UC5((Transfer Funds to Recipient))
+        UC6((Pay Utility Bills))
+        UC7((View & Filter Transaction History))
+        UC8((Generate & Print Receipt))
+        UC9((Toggle Light / Dark Mode))
+        UC10((Issue Voice Commands via STT))
+        UC11((Monitor System Volume & Transactions))
+        UC12((Manage User Status: Active / Suspend))
+        UC13((Inspect Security Audit Logs))
+        UC14((Explore 3NF Schema & ERD))
+    end
+
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    User --> UC5
+    User --> UC6
+    User --> UC7
+    User --> UC8
+    User --> UC9
+    User --> UC10
+    User --> UC14
+
+    Assistant -.->|Executes| UC3
+    Assistant -.->|Executes| UC4
+    Assistant -.->|Executes| UC5
+    Assistant -.->|Executes| UC6
+    Assistant -.->|Executes| UC9
+
+    Admin --> UC2
+    Admin --> UC11
+    Admin --> UC12
+    Admin --> UC13
+    Admin --> UC14

@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+    actor User as User / Admin
+    participant Client as React Client (Frontend)
+    participant API as Express API (/api/auth)
+    participant DB as Relational DBMS (users & wallets)
+
+    User->>Client: Enters Email & Password
+    Client->>API: POST /api/auth/login { email, password }
+    API->>DB: SELECT * FROM users WHERE email = ?
+    DB-->>API: User record (including password_hash, role, account_status)
+    
+    alt User not found or inactive
+        API-->>Client: 401 Unauthorized / 403 Suspended
+        Client-->>User: Displays error notification
+    else Credentials Validated
+        API->>API: bcrypt.compare(password, password_hash)
+        API->>DB: SELECT * FROM wallets WHERE user_id = ?
+        DB-->>API: Wallet record (wallet_number, balance)
+        API->>API: jwt.sign({ userId, email, role }, JWT_SECRET, expiresIn='7d')
+        API->>DB: INSERT INTO audit_logs (USER_LOGIN)
+        API-->>Client: 200 OK { token, user, wallet }
+        Client->>Client: Stores token in localStorage & updates AuthContext
+        Client-->>User: Redirects to /dashboard (Light Mode default)
+    end

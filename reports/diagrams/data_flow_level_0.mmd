@@ -1,0 +1,11 @@
+flowchart TD
+    User([Registered User / Admin])
+    Utility([Utility Service Providers])
+    System[0.0 WalletWise Digital Wallet System]
+    Database[(Relational Database: walletwise.db)]
+
+    User -->|Credentials, Transfer Amount, Bill Details, Voice Queries| System
+    System -->|Authenticated Token, Realtime Balance, Transaction Receipts, Audit Reports| User
+    System -->|Simulated Bill Settlement Requests| Utility
+    Utility -->|Settlement Confirmation & Invoices| System
+    System <-->|ACID Read / Write Transactions, Constraints, Ledger Records| Database

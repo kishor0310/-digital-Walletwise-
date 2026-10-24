@@ -1,0 +1,72 @@
+erDiagram
+    USERS ||--|| WALLETS : "has exactly one (1:1)"
+    WALLETS ||--o{ TRANSACTIONS : "sender / receiver in (1:N)"
+    TRANSACTIONS ||--|{ TRANSACTION_ENTRIES : "contains ledger entries (1:N)"
+    WALLETS ||--o{ TRANSACTION_ENTRIES : "posts credit/debit into (1:N)"
+    TRANSACTIONS ||--o| BILL_PAYMENTS : "settles utility bill (1:1)"
+    USERS ||--o{ BILL_PAYMENTS : "authorizes payment (1:N)"
+    USERS ||--o{ AUDIT_LOGS : "actor of event (1:N)"
+
+    USERS {
+        int user_id PK
+        string full_name
+        string email UK
+        string phone UK
+        string password_hash
+        string role
+        string account_status
+        datetime created_at
+    }
+
+    WALLETS {
+        int wallet_id PK
+        int user_id FK, UK
+        string wallet_number UK
+        decimal balance
+        string currency
+        string wallet_status
+        datetime updated_at
+    }
+
+    TRANSACTIONS {
+        int transaction_id PK
+        string reference_number UK
+        string idempotency_key UK
+        int sender_wallet_id FK
+        int receiver_wallet_id FK
+        string transaction_type
+        decimal amount
+        string description
+        string status
+        datetime completed_at
+    }
+
+    TRANSACTION_ENTRIES {
+        int entry_id PK
+        int transaction_id FK
+        int wallet_id FK
+        string entry_type
+        decimal amount
+        datetime created_at
+    }
+
+    BILL_PAYMENTS {
+        int bill_payment_id PK
+        int transaction_id FK, UK
+        int user_id FK
+        string category
+        string provider_name
+        string customer_reference
+        decimal amount
+        datetime payment_date
+    }
+
+    AUDIT_LOGS {
+        int log_id PK
+        int actor_user_id FK
+        string action
+        string entity_type
+        string entity_id
+        string details
+        datetime created_at
+    }

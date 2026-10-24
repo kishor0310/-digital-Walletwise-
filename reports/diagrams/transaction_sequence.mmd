@@ -1,0 +1,38 @@
+sequenceDiagram
+    autonumber
+    actor Sender as Sender User (Mega Sree)
+    participant Client as React Client (/dashboard/transfer)
+    participant API as Transfer API (/api/transfers)
+    participant Engine as WalletService (ACID Engine)
+    participant DB as SQLite3 / MySQL DB
+
+    Sender->>Client: Enters Recipient (Arun) & Amount (₹200)
+    Client->>Client: Validates positive amount & balance
+    Client->>API: POST /api/transfers { recipient, amount, description } [Bearer JWT]
+    API->>API: Verify JWT & extract senderUserId
+    API->>Engine: transferFunds(senderId, recipientIdentifier, amount)
+    
+    Engine->>DB: BEGIN TRANSACTION (Exclusive / Serialized)
+    Engine->>DB: SELECT * FROM wallets WHERE user_id = senderId
+    Engine->>DB: SELECT * FROM users JOIN wallets ON recipientIdentifier
+    
+    alt Insufficient Balance or Recipient Inactive
+        Engine->>DB: INSERT INTO transactions (status='FAILED', description='Insufficient funds')
+        Engine->>DB: ROLLBACK
+        Engine-->>API: Throw Insufficient Balance Error
+        API-->>Client: 400 Bad Request { success: false, message }
+        Client-->>Sender: Displays error notification
+    else Sufficient Balance & Valid Wallets
+        Note over Engine,DB: Deadlock Prevention: Ordered Wallet IDs (min, max)
+        Engine->>DB: UPDATE wallets SET balance = balance - 200 WHERE wallet_id = senderWalletId
+        Engine->>DB: UPDATE wallets SET balance = balance + 200 WHERE wallet_id = recipientWalletId
+        Engine->>DB: INSERT INTO transactions (type='TRANSFER', status='SUCCESS', ref='TRF...')
+        Engine->>DB: INSERT INTO transaction_entries (DEBIT 200 for sender)
+        Engine->>DB: INSERT INTO transaction_entries (CREDIT 200 for recipient)
+        Engine->>DB: INSERT INTO audit_logs (TRANSFER_FUNDS)
+        Engine->>DB: COMMIT TRANSACTION
+        Engine-->>API: Return { transactionId, referenceNumber, senderBalance, status='SUCCESS' }
+        API-->>Client: 200 OK with transfer payload
+        Client->>Client: Trigger confetti & open Transaction Receipt Modal
+        Client-->>Sender: Displays updated balance & printable receipt slip
+    end
