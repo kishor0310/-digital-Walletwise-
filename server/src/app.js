@@ -46,6 +46,30 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Direct Academic Report PDF & DOCX Endpoints
+const path = require('path');
+const fs = require('fs');
+
+app.get(['/report.pdf', '/api/report/pdf', '/download/pdf'], (req, res) => {
+  const pdfPath = path.resolve(__dirname, '../../reports/Digital_Wallet_Management_System_Report.pdf');
+  if (!fs.existsSync(pdfPath)) {
+    return res.status(404).json({ success: false, message: 'PDF report not found on server.' });
+  }
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'inline; filename="Digital_Wallet_Management_System_Report.pdf"');
+  return fs.createReadStream(pdfPath).pipe(res);
+});
+
+app.get(['/report.docx', '/api/report/docx', '/download/docx'], (req, res) => {
+  const docxPath = path.resolve(__dirname, '../../reports/Digital_Wallet_Management_System_Report.docx');
+  if (!fs.existsSync(docxPath)) {
+    return res.status(404).json({ success: false, message: 'DOCX report not found on server.' });
+  }
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+  res.setHeader('Content-Disposition', 'attachment; filename="Digital_Wallet_Management_System_Report.docx"');
+  return fs.createReadStream(docxPath).pipe(res);
+});
+
 // Mount API routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/wallet', walletRoutes);
